@@ -26,8 +26,8 @@
 
 汉化版：
 
-[https://gitee.com/shines77/TacoTip_cn](https://gitee.com/shines77/TacoTip_cn) - （国内）
+[https://gitee.com/shines77/TacoTip_cn](https://gitee.com/shines77/TacoTip_cn) --（国内）
 
-[https://github.com/shines77/TacoTip_cn](https://github.com/shines77/TacoTip_cn) - （国外）
+[https://github.com/shines77/TacoTip_cn](https://github.com/shines77/TacoTip_cn) --（国外）
 
 汉化作者：[shines77(郭子)](https://gitee.com/shines77)

@@ -97,10 +97,12 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     local linesToAdd = {}
 
     local numLines = GameTooltip:NumLines()
+    local newNumLines = numLines
 
     for i = 1, numLines do
         text[i] = _G["GameTooltipTextLeft"..i]:GetText()
     end
+
     if (not text[1] or text[1] == "") then return end
     if (not text[2] or text[2] == "") then return end
 
@@ -164,7 +166,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
             end
             if (inSameMap) then
                 if (wide_style) then
-                    tinsert(linesToAdd, {L["Target"]..":", L["None"] , NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b})
+                    tinsert(linesToAdd, {L["Target"]..":", L["None"].." ", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b})
                 else
                     tinsert(linesToAdd, {L["Target"]..": |cFF808080"..L["None"].."|r"})
                 end
@@ -209,7 +211,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                     text[i + 1] = text[i]
                 end
                 text[2] = string.format("|cFF40FB40<%s>|r", L["No Guild"])
-                numLines = numLines + 1
+                newNumLines = newNumLines + 1
             end
         else
             if (guildName and guildRankName) then
@@ -348,9 +350,8 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         end
     elseif (TacoTip_UnitIsPet(unit)) then
         if (UnitIsFriend("player", unit)) then
-            text[1] = string.gsub(text[1], name, string.format("|cFF27D0F8%s|r", name))
-        else
-            --Maybe is a enemy's pet
+            -- It is a friend player's pet
+            text[1] = string.gsub(text[1], name, string.format("|cFF27D0F8%s|r", name), 1)
         end
     end
 
@@ -380,9 +381,13 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
             _G["GameTooltipTextLeft"..n]:SetText(text[i])
         end
     end
+    for i = (numLines + 1), newNumLines do
+        n = n + 1
+        self:AddLine(text[i], HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
+    end
     if (wide_style) then
         local anchor = "GameTooltipTextLeft"..n
-        while (n < numLines) do
+        while (n < newNumLines) do
             n = n + 1
             _G["GameTooltipTextLeft"..n]:SetText()
             _G["GameTooltipTextRight"..n]:SetText()
@@ -397,7 +402,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         end
     else
         for _, v in ipairs(linesToAdd) do
-            if (n < numLines) then
+            if (n < newNumLines) then
                 n = n + 1
                 local txt, r, g, b = unpack(v)
                 _G["GameTooltipTextLeft"..n]:SetTextColor(r or NORMAL_FONT_COLOR.r, g or NORMAL_FONT_COLOR.g, b or NORMAL_FONT_COLOR.b)
@@ -406,7 +411,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                 self:AddLine(unpack(v))
             end
         end
-        while (n < numLines) do
+        while (n < newNumLines) do
             n = n + 1
             _G["GameTooltipTextLeft"..n]:SetText()
             _G["GameTooltipTextRight"..n]:SetText()
