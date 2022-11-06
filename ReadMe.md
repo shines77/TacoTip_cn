@@ -14,7 +14,7 @@
     123
     ```
 
-## 原版
+## 英文原版
 
 英文原版：
 
@@ -22,12 +22,12 @@
 
 原作者：[kebabstorm](https://www.curseforge.com/members/kebabstorm)
 
-## 中文版
+## 中文汉化版
 
 汉化版：
 
-[https://gitee.com/shines77/TacoTip_cn](https://gitee.com/shines77/TacoTip_cn)
+[https://gitee.com/shines77/TacoTip_cn](https://gitee.com/shines77/TacoTip_cn) - （国内）
 
-[https://github.com/shines77/TacoTip_cn](https://github.com/shines77/TacoTip_cn)
+[https://github.com/shines77/TacoTip_cn](https://github.com/shines77/TacoTip_cn) - （国外）
 
 汉化作者：[shines77(郭子)](https://gitee.com/shines77)
