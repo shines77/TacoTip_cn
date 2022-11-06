@@ -187,14 +187,14 @@ elseif (GetLocale() == "zhCN") then
 lib.spec_table_localized = lib.spec_table_localized or {
     ["WARRIOR"] = {"武器", "狂怒", "防护"},
     ["PALADIN"] = {"神圣", "防护", "惩戒"},
-    ["HUNTER"] = {"野兽控制", "射击", "生存"},
+    ["HUNTER"] = {"兽王", "射击", "生存"},
     ["ROGUE"] = {"刺杀", "战斗", "敏锐"},
     ["PRIEST"] = {"戒律", "神圣", "暗影"},
     ["DEATHKNIGHT"] = {"鲜血", "冰霜", "邪恶"},
     ["SHAMAN"] = {"元素", "增强", "恢复"},
     ["MAGE"] = {"奥术", "火焰", "冰霜"},
-    ["WARLOCK"] = {"痛苦", "恶魔学识", "毁灭"},
-    ["DRUID"] = {"平衡", "野性战斗", "恢复"}
+    ["WARLOCK"] = {"痛苦", "恶魔", "毁灭"},
+    ["DRUID"] = {"平衡", "野德", "恢复"}
 }
 elseif (GetLocale() == "zhTW") then
 lib.spec_table_localized = lib.spec_table_localized or {
@@ -212,6 +212,25 @@ lib.spec_table_localized = lib.spec_table_localized or {
 else -- enUS / enGB
 lib.spec_table_localized = lib.spec_table
 end
+
+--
+-- The color of the special name
+-- Add by shines77(gz_shines@msn.com) - https://github.comn/shines77/TacoTip_cn
+--
+-- If wanna use default special color or class color, use "--XXXX" format please.
+--
+lib.spec_table_color = lib.spec_table_color or {
+    ["WARRIOR"] = {"--武器", "--狂怒", "--防护"},
+    ["PALADIN"] = {"D8D8FF", "--防护", "--惩戒"},
+    ["HUNTER"] = {"E81B1B", "--射击", "F8A017"}, --F8E017
+    ["ROGUE"] = {"B0DFFF", "--战斗", "--敏锐"},
+    ["PRIEST"] = {"--戒律", "--神圣", "C010E8"},
+    ["DEATHKNIGHT"] = {"--鲜血", "A8CCFF", "38F848"},
+    ["SHAMAN"] = {"305EFF", "--增强", "D8D8FF"},
+    ["MAGE"] = {"--奥术", "F8A017", "D8D8FF"},
+    ["WARLOCK"] = {"--痛苦", "--恶魔", "F8A017"},
+    ["DRUID"] = {"10C0E8", "--野德", "D8D8FF"}
+}
 
 -- TODO: talent IDs
 -- TODO: localization
@@ -2306,6 +2325,7 @@ local cache = lib.cache
 local queue = lib.queue
 local spec_table = lib.spec_table
 local spec_table_localized = lib.spec_table_localized
+local spec_table_color = lib.spec_table_color
 local talents_table = lib.talents_table
 local guildies = lib.guildies
 
@@ -2366,7 +2386,7 @@ local function addCacheUser(guid, inventory, talents, achievements)
         user.achievements = achievements
     else
         user.achievements = {["time"] = 0}
-    end    
+    end
     if (not cache.first) then
         cache.first = user
         cache.last = user
@@ -2386,7 +2406,7 @@ local function addCacheUser(guid, inventory, talents, achievements)
             else
                 local next = cache.first.next
                 cache.first = nil
-                cache.first = next 
+                cache.first = next
             end
         else
             cache.len = cache.len + 1
@@ -2492,7 +2512,7 @@ local function tryInspect(unit, refresh)
 end
 
 function f:INSPECT_READY(event, guid)
-    if (not guid) then 
+    if (not guid) then
         return
     end
     local unit = lib:PlayerGUIDToUnitToken(guid)
@@ -2670,7 +2690,7 @@ local function inspectQueueTick()
             end
         end
     end
-end 
+end
 if lib.queueTicker then
     lib.queueTicker:Cancel()
 end
@@ -2797,7 +2817,7 @@ end
 --  Returns
 --     @number status              - inspection status
 --                                   == 0 : target cannot be inspected
---                                   == 1 : instant inspection 
+--                                   == 1 : instant inspection
 --                                   == 2 : queued inspection
 --
 function lib:DoInspect(unitorguid)
@@ -2869,11 +2889,50 @@ end
 --     @string specName            - specialization name e.g. "Retribution"
 --
 function lib:GetSpecializationName(class, tabIndex, localized)
-    assert(class == "WARRIOR" or class == "PALADIN" or class == "HUNTER" or class == "ROGUE" or class == "PRIEST" or class == "SHAMAN" or 
+    assert(class == "WARRIOR" or class == "PALADIN" or class == "HUNTER" or class == "ROGUE" or class == "PRIEST" or class == "SHAMAN" or
            class == "MAGE" or class == "WARLOCK" or class == "DRUID" or (isWotlk and class == "DEATHKNIGHT"), "invalid class")
     local n = tonumber(tabIndex) or 0
     assert(n > 0 and n < 4, "tabIndex is not a valid number (1-3)")
     return localized and spec_table_localized[class][tabIndex] or spec_table[class][tabIndex]
+end
+
+
+function string.starts_with(string, startStr)
+   return (string.sub(string, 1, string.len(startStr)) == startStr)
+end
+
+--------------------------------------------------------------------------
+--
+-- Add by shines(gz_shines@msn.com)
+--
+-- ClassicInspector:GetSpecializationNameWithColor(class, tabIndex, classColor)
+--
+--  Parameters
+--     @string class               - english class name in uppercase e.g. "WARRIOR"
+--     @number tabIndex            - talent tab index (1-3)
+--     @string classColor          - class color e.g. "AABBCC"
+--     @boolean localized          - return localized name instead of english name
+--
+--  Returns
+--     @string specName            - specialization name with color e.g. "|cFF667788Retribution|r"
+--
+function lib:GetSpecializationNameWithColor(class, tabIndex, classColor, localized)
+    local l_spec_name = lib:GetSpecializationName(class, tabIndex, localized)
+
+    if spec_table_color then
+        local talentColor = spec_table_color[class][tabIndex]
+        if ((talentColor == nil) or string.starts_with(talentColor, '--') or (talentColor == '')) then
+            if (classColor) then
+                return "|cFF"..classColor..l_spec_name.."|r"
+            else
+                return l_spec_name
+            end
+        else
+            return "|cFF"..talentColor..l_spec_name.."|r"
+        end
+    else
+        return l_spec_name
+    end
 end
 
 
@@ -2888,7 +2947,7 @@ end
 --     @number numTalents          - number of talents in tab
 --
 function lib:GetNumTalentsByClass(class, tabIndex)
-    assert(class == "WARRIOR" or class == "PALADIN" or class == "HUNTER" or class == "ROGUE" or class == "PRIEST" or class == "SHAMAN" or 
+    assert(class == "WARRIOR" or class == "PALADIN" or class == "HUNTER" or class == "ROGUE" or class == "PRIEST" or class == "SHAMAN" or
            class == "MAGE" or class == "WARLOCK" or class == "DRUID" or (isWotlk and class == "DEATHKNIGHT"), "invalid class")
     local n = tonumber(tabIndex) or 0
     assert(n > 0 and n < 4, "tabIndex is not a valid number (1-3)")
@@ -3107,7 +3166,7 @@ end
 --     @number talentID            - talent ID
 --
 function lib:GetTalentInfoByClass(class, tabIndex, talentIndex)
-    assert(class == "WARRIOR" or class == "PALADIN" or class == "HUNTER" or class == "ROGUE" or class == "PRIEST" or class == "SHAMAN" or 
+    assert(class == "WARRIOR" or class == "PALADIN" or class == "HUNTER" or class == "ROGUE" or class == "PRIEST" or class == "SHAMAN" or
            class == "MAGE" or class == "WARLOCK" or class == "DRUID" or (isWotlk and class == "DEATHKNIGHT"), "invalid class")
     tabIndex = tonumber(tabIndex) or 0
     assert(tabIndex > 0 and tabIndex < 4, "tabIndex is not a valid number (1-3)")

@@ -1,8 +1,8 @@
 ## Interface: 11304
-## Version: 0.3.0
+## Version: 0.3.0.1
 ## Title: TacoTip
 ## Notes: TacoTip (GearScore & Talents)
-## Author: kebabstorm
+## Author: kebabstorm, shines77(gz_shines@msn.com)
 ## SavedVariables: TacoTipConfig
 ## OptionalDependencies: LibStub, CallbackHandler-1.0, LibDetours-1.0, LibClassicInspector, LibClassicGearScore, Pawn
 ## X-Min-Interface-Classic: 11304
@@ -29,4 +29,5 @@ Locale\enUS.lua
 gearscore.lua
 pawn.lua
 options.lua
+extends.lua
 main.lua

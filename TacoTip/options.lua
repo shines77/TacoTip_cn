@@ -1,6 +1,7 @@
 
 local addOnName = ...
 local addOnVersion = GetAddOnMetadata(addOnName, "Version") or "0.0.1"
+local addOnConfigVersion = "0.3.0-shines77"
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
@@ -29,6 +30,10 @@ local HORDE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-HORDE:16:16:-2:0:64:64:0
 local ALLIANCE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-ALLIANCE:16:16:-2:0:64:64:0:38:0:38|t"
 local PVP_FLAG_ICON = "|TInterface\\GossipFrame\\BattleMasterGossipIcon:0|t"
 
+function TT:GetConfigVersion()
+    return addOnConfigVersion
+end
+
 function TT:GetDefaults()
     return {
         color_class = true,
@@ -47,11 +52,13 @@ function TT:GetDefaults()
         show_target = true,
         show_pawn_player = false,
         show_team = false,
+        show_class_icon = true,
         show_pvp_icon = false,
-        guild_rank_alt_style = false,
+        guild_rank_alt_style = true,
         show_hp_bar = true,
         show_power_bar = false,
         instant_fade = false,
+        enable_custom_pos = false,
         anchor_mouse = false,
         anchor_mouse_world = true,
         anchor_mouse_spells = false,
@@ -64,7 +71,7 @@ function TT:GetDefaults()
         character_ilvl_offset_x = 0,
         character_ilvl_offset_y = 0,
         unlock_info_position = false,
-        conf_version = addOnVersion,
+        conf_version = addOnConfigVersion,
         show_achievement_points = false
         --custom_pos = nil,
         --custom_anchor = nil,
@@ -127,7 +134,7 @@ frame:SetScript("OnShow", function(frame)
     local options = {}
     local title = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
     title:SetPoint("TOPLEFT", 16, -16)
-    title:SetText(addOnName .. " v" .. addOnVersion .. " 汉化 by 希曼来了-龙之召唤")
+    title:SetText(addOnName .. " v" .. addOnVersion .. " 汉化 by shines77(司马云信-辛迪加)")
 
     local description = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     description:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
@@ -322,7 +329,7 @@ frame:SetScript("OnShow", function(frame)
         "ClassColors",
         L["Class Color"],
         L["Color class names in tooltips"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.color_class = value
             showExampleTooltip()
         end)
@@ -332,7 +339,7 @@ frame:SetScript("OnShow", function(frame)
         "ShowTitles",
         L["Title"],
         L["Show player's title in tooltips"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.show_titles = value
             showExampleTooltip()
         end)
@@ -342,7 +349,7 @@ frame:SetScript("OnShow", function(frame)
         "GuildNames",
         L["Guild Name"],
         L["Show guild name in tooltips"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.show_guild_name = value
             options.showGuildRanks:SetDisabled(not value)
             if (value) then
@@ -360,7 +367,7 @@ frame:SetScript("OnShow", function(frame)
         "GuildRanks",
         L["Guild Rank"],
         L["Show guild rank in tooltips"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.show_guild_rank = value
             options.guildRankStyle1:SetDisabled(not value)
             options.guildRankStyle2:SetDisabled(not value)
@@ -403,7 +410,7 @@ frame:SetScript("OnShow", function(frame)
         "Talents",
         L["Talents"],
         L["Show talents and specialization in tooltips"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.show_talents = value
             showExampleTooltip()
         end)
@@ -413,7 +420,7 @@ frame:SetScript("OnShow", function(frame)
         "GearScorePlayer",
         "GearScore",
         L["Show player's GearScore in tooltips"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.show_gs_player = value
             showExampleTooltip()
         end)
@@ -423,7 +430,7 @@ frame:SetScript("OnShow", function(frame)
         "PawnScorePlayer",
         "PawnScore",
         L["Show player's PawnScore in tooltips (may affect performance)"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.show_pawn_player = value
             showExampleTooltip()
         end)
@@ -433,7 +440,7 @@ frame:SetScript("OnShow", function(frame)
         "ShowTarget",
         L["Target"],
         L["Show unit's target in tooltips"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.show_target = value
             showExampleTooltip()
         end)
@@ -443,17 +450,17 @@ frame:SetScript("OnShow", function(frame)
         "ShowTeam",
         L["Faction Icon"],
         L["Show player's faction icon (Horde/Alliance) in tooltips"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.show_team = value
             showExampleTooltip()
         end)
-    options.showTeam:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", -2, -116)   
+    options.showTeam:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", -2, -116)
 
     options.showPVPIcon = newCheckbox(
         "ShowPVPIcon",
         L["PVP Icon"],
         L["Show player's pvp flag status as icon instead of text"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.show_pvp_icon = value
             showExampleTooltip()
         end)
@@ -463,7 +470,7 @@ frame:SetScript("OnShow", function(frame)
         "ShowHealthBar",
         L["Health Bar"],
         L["Show unit's health bar under tooltip"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.show_hp_bar = value
             showExampleTooltip()
         end)
@@ -473,7 +480,7 @@ frame:SetScript("OnShow", function(frame)
         "ShowPowerBar",
         L["Power Bar"],
         L["Show unit's power bar under tooltip"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.show_power_bar = value
             showExampleTooltip()
         end)
@@ -488,7 +495,7 @@ frame:SetScript("OnShow", function(frame)
         "GearScoreCharacter",
         "GearScore",
         L["Show GearScore in character frame"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.show_gs_character = value
             if (PaperDollFrame and PaperDollFrame:IsShown()) then
                 TT:RefreshCharacterFrame()
@@ -503,7 +510,7 @@ frame:SetScript("OnShow", function(frame)
         "AverageItemLevel",
         L["Average iLvl"],
         L["Show Average Item Level in character frame"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.show_avg_ilvl = value
             if (PaperDollFrame and PaperDollFrame:IsShown()) then
                 TT:RefreshCharacterFrame()
@@ -527,7 +534,7 @@ frame:SetScript("OnShow", function(frame)
                 TT:RefreshInspectFrame()
             end
         end)
-    options.lockCharacterInfoPosition:SetPoint("TOPLEFT", characterFrameText, "BOTTOMLEFT", -2, -32)    
+    options.lockCharacterInfoPosition:SetPoint("TOPLEFT", characterFrameText, "BOTTOMLEFT", -2, -32)
 
 
     local extraText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -538,16 +545,16 @@ frame:SetScript("OnShow", function(frame)
         "ShowItemLevel",
         L["Show Item Level"],
         L["Display item level in the tooltip for certain items."],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.show_item_level = value
         end)
-    options.showItemLevel:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -4)  
+    options.showItemLevel:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -4)
 
     options.gearScoreItems = newCheckbox(
         "GearScoreItems",
         L["Show Item GearScore"],
         L["Show GearScore in item tooltips"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.show_gs_items = value
         end)
     options.gearScoreItems:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -32)
@@ -556,7 +563,7 @@ frame:SetScript("OnShow", function(frame)
         "UberTips",
         L["Enhanced Tooltips"],
         L["TEXT_OPT_UBERTIPS"],
-        function(self, value) 
+        function(self, value)
             SetCVar("UberTooltips", value and "1" or "0")
         end)
     options.uberTips:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -60)
@@ -565,7 +572,7 @@ frame:SetScript("OnShow", function(frame)
         "HideInCombat",
         L["Disable In Combat"],
         L["Disable gearscore & talents in combat"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.hide_in_combat = value
         end)
     options.hideInCombat:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -88)
@@ -574,10 +581,10 @@ frame:SetScript("OnShow", function(frame)
         "ChatClassColors",
         L["Chat Class Colors"],
         L["Color names by class in chat windows"],
-        function(self, value) 
+        function(self, value)
             SetCVar("chatClassColorOverride", value and "0" or "1")
         end)
-    options.chatClassColors:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -116) 
+    options.chatClassColors:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -116)
 
     options.customPosition = newCheckbox(
         "CustomPosition",
@@ -601,7 +608,7 @@ frame:SetScript("OnShow", function(frame)
     options.customPosition:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -4)
 
     options.moverBtn = CreateFrame("Button", "TacoTipOptButtonMover", frame, "UIPanelButtonTemplate")
-    options.moverBtn:SetText("Mover")
+    options.moverBtn:SetText(L["Mover"])
     options.moverBtn:SetWidth(80)
     options.moverBtn:SetHeight(20)
     options.moverBtn:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 374, -5)
@@ -641,7 +648,7 @@ frame:SetScript("OnShow", function(frame)
         "InstantFade",
         L["Instant Fade"],
         L["Fade out unit tooltips instantly"],
-        function(self, value) 
+        function(self, value)
             TacoTipConfig.instant_fade = value
             if (value) then
                 TT.frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
@@ -671,7 +678,7 @@ frame:SetScript("OnShow", function(frame)
         function(self, value)
             TacoTipConfig.show_achievement_points = value
         end)
-    options.showAchievementPoints:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -116)      
+    options.showAchievementPoints:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -116)
 
 
     local styleText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")

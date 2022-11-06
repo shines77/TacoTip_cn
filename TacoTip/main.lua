@@ -26,8 +26,8 @@ local isPawnLoaded = PawnClassicLastUpdatedVersion and PawnClassicLastUpdatedVer
 
 local HORDE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-HORDE:16:16:-2:0:64:64:0:38:0:38|t"
 local ALLIANCE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-ALLIANCE:16:16:-2:0:64:64:0:38:0:38|t"
-local PVP_FLAG_ICON = "|TInterface\\GossipFrame\\BattleMasterGossipIcon:0|t"
-local ACHIEVEMENT_ICON = "|TInterface\\AchievementFrame\\UI-Achievement-TinyShield:18:18:0:0:20:20:0:12.5:0:12.5|t"
+local PVP_FLAG_ICON = "|TInterface\\GossipFrame\\BattleMasterGossipIcon:16:16|t"
+local ACHIEVEMENT_ICON = "|TInterface\\AchievementFrame\\UI-Achievement-TinyShield:16:16:0:0:20:20:0:12.5:-3:10|t"
 
 local POWERBAR_UPDATE_RATE = 0.2
 
@@ -35,6 +35,27 @@ local NewTicker = C_Timer.NewTicker
 local CAfter = C_Timer.After
 
 local playerClass = select(2, UnitClass("player"))
+local localClassColors = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)
+local localClassColorsHex = localClassColorsHex or {}
+
+local NormalFontColorHex = "FFD100"  -- "F8E017"
+local HighLightFontColorHex = "FFFFFF"
+
+local function TacoTip_InitClassColorHex()
+    if (localClassColorsHex ~= nil) and (table_len(localClassColorsHex) == 0) then
+        for k, v in pairs(localClassColors) do
+            local colorHex = string.format("%02x%02x%02x", v.r * 255, v.g * 255, v.b * 255)
+            localClassColorsHex[k] = colorHex
+        end
+        --TT_DebugPrint("localClassColorsHex["..table_len(localClassColorsHex).."] = ")
+        --TT_DebugPrint(localClassColorsHex)
+
+        NormalFontColorHex = string.format("%02x%02x%02x", NORMAL_FONT_COLOR.r * 255, NORMAL_FONT_COLOR.g * 255, NORMAL_FONT_COLOR.b * 255)
+        HighLightFontColorHex = string.format("%02x%02x%02x", HIGHLIGHT_FONT_COLOR.r * 255, HIGHLIGHT_FONT_COLOR.g * 255, HIGHLIGHT_FONT_COLOR.b * 255)
+        --TT_DebugPrint("NormalFontColorHex = 0x"..NormalFontColorHex)
+        --TT_DebugPrint("HighLightFontColorHex = 0x"..HighLightFontColorHex)
+    end
+end
 
 function TacoTip_GSCallback(guid)
     local _, ttUnit = GameTooltip:GetUnit()
@@ -43,9 +64,20 @@ function TacoTip_GSCallback(guid)
     end
 end
 
+function TacoTip_UnitIsPet(unit)
+    --local guidType = tonumber(strsub(UnitGUID(unit), 5, 5), 16) % 8
+    --if guidType == 4 then
+    --    return true
+    --else
+    --    return false
+    --end
+    --return false
+    return UnitPlayerControlled(unit) and not UnitIsPlayer(unit)
+end
+
 GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     local name, unit = self:GetUnit()
-    if (not unit) then 
+    if (not unit) then
         return
     end
 
@@ -66,7 +98,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 
     local numLines = GameTooltip:NumLines()
 
-    for i=1,numLines do
+    for i = 1, numLines do
         text[i] = _G["GameTooltipTextLeft"..i]:GetText()
     end
     if (not text[1] or text[1] == "") then return end
@@ -79,46 +111,46 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         if (targetName) then
             if (UnitIsUnit(unitTarget, unit)) then
                 if (wide_style) then
-                    tinsert(linesToAdd, {L["Target"]..":", L["Self"], NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
+                    tinsert(linesToAdd, {L["Target"]..":", L["Self"].." ", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
                 else
                     tinsert(linesToAdd, {L["Target"]..": |cFFFFFFFF"..L["Self"].."|r"})
                 end
             elseif (UnitIsUnit(unitTarget, "player")) then
                 if (wide_style) then
-                    tinsert(linesToAdd, {L["Target"]..":", L["You"], NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1, 1, 0})
+                    tinsert(linesToAdd, {L["Target"]..":", L["You"].." ", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1, 1, 0})
                 else
                     tinsert(linesToAdd, {L["Target"]..": |cFFFFFF00"..L["You"].."|r"})
                 end
             elseif (UnitIsPlayer(unitTarget)) then
-                local classc
+                local classClr
                 if (TacoTipConfig.color_class) then
                     local _, targetClass = UnitClass(unitTarget)
                     if (targetClass) then
-                        classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[targetClass]
+                        classClr = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[targetClass]
                     end
                 end
-                if (classc) then
+                if (classClr) then
                     if (wide_style) then
-                        tinsert(linesToAdd, {L["Target"]..":", string.format("|cFF%02x%02x%02x%s|r (%s)", classc.r*255, classc.g*255, classc.b*255, targetName, L["Player"]), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
+                        tinsert(linesToAdd, {L["Target"]..":", string.format("|cFF%02x%02x%02x%s|r (%s) ", classClr.r * 255, classClr.g * 255, classClr.b * 255, targetName, L["Player"]), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
                     else
-                        tinsert(linesToAdd, {string.format("%s: |cFF%02x%02x%02x%s|cFFFFFFFF (%s)|r", L["Target"], classc.r*255, classc.g*255, classc.b*255, targetName, L["Player"])})
+                        tinsert(linesToAdd, {string.format("%s: |cFF%02x%02x%02x%s|cFFFFFFFF (%s)|r", L["Target"], classClr.r * 255, classClr.g * 255, classClr.b * 255, targetName, L["Player"])})
                     end
                 else
                     if (wide_style) then
-                        tinsert(linesToAdd, {L["Target"]..":", targetName.." ("..L["Player"]..")", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
+                        tinsert(linesToAdd, {L["Target"]..":", targetName.." ("..L["Player"]..") ", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
                     else
                         tinsert(linesToAdd, {L["Target"]..": |cFFFFFFFF"..targetName.." ("..L["Player"]..")|r"})
                     end
                 end
             elseif (UnitIsUnit(unitTarget, "pet") or UnitIsOtherPlayersPet(unitTarget)) then
                 if (wide_style) then
-                    tinsert(linesToAdd, {L["Target"]..":", targetName.." ("..L["Pet"]..")", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
+                    tinsert(linesToAdd, {L["Target"]..":", targetName.." ("..L["Pet"]..") ", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
                 else
                     tinsert(linesToAdd, {L["Target"]..": |cFFFFFFFF"..targetName.." ("..L["Pet"]..")|r"})
                 end
             else
                 if (wide_style) then
-                    tinsert(linesToAdd, {L["Target"]..":", targetName, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
+                    tinsert(linesToAdd, {L["Target"]..":", targetName.." ", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
                 else
                     tinsert(linesToAdd, {L["Target"]..": |cFFFFFFFF"..targetName.."|r"})
                 end
@@ -132,7 +164,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
             end
             if (inSameMap) then
                 if (wide_style) then
-                    tinsert(linesToAdd, {L["Target"]..":", L["None"], NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b})
+                    tinsert(linesToAdd, {L["Target"]..":", L["None"] , NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b})
                 else
                     tinsert(linesToAdd, {L["Target"]..": |cFF808080"..L["None"].."|r"})
                 end
@@ -148,34 +180,50 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         end
         if (TacoTipConfig.color_class) then
             if (localizedClass and class) then
-                local classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class]
-                if (classc) then
-                    --GameTooltipTextLeft1:SetTextColor(classc.r, classc.g, classc.b)
-                    text[1] = string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, text[1])
-                    for i=2,3 do
+                local classClr = localClassColors[class]
+                if (classClr) then
+                    --GameTooltipTextLeft1:SetTextColor(classClr.r, classClr.g, classClr.b)
+                    text[1] = string.gsub(text[1], name, string.format("|cFF%02x%02x%02x%s|r", classClr.r * 255, classClr.g * 255, classClr.b * 255, name), 1)
+                    for i = 2, 3 do
                         if (text[i]) then
-                            text[i] = string.gsub(text[i], localizedClass, string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, localizedClass), 1)
+                            text[i] = string.gsub(text[i], localizedClass, string.format("|cFF%02x%02x%02x%s|r", classClr.r * 255, classClr.g * 255, classClr.b * 255, localizedClass), 1)
                         end
                     end
                 end
             end
         end
-        local guildName, guildRankName = GetGuildInfo(unit);
-        if (guildName and guildRankName) then
-            if (TacoTipConfig.show_guild_name) then
+        local guildName, guildRankName = GetGuildInfo(unit)
+        if (TacoTipConfig.show_guild_name) then
+            if (guildName and guildRankName) then
                 if (TacoTipConfig.show_guild_rank) then
                     if (TacoTipConfig.guild_rank_alt_style) then
-                        text[2] = string.gsub(text[2], guildName, string.format("|cFF40FB40<%s> (%s)|r", guildName, guildRankName), 1)
+                        text[2] = string.gsub(text[2], guildName, string.format("|cFF40FB40<%s> - %s: %s|r ", guildName, L["Rank"], guildRankName), 1)
                     else
-                        text[2] = string.gsub(text[2], guildName, string.format("|cFF40FB40"..L["FORMAT_GUILD_RANK_1"].."|r", guildRankName, guildName), 1)
+                        text[2] = string.gsub(text[2], guildName, string.format("|cFF40FB40"..L["FORMAT_GUILD_RANK_1"].."|r ", guildRankName, guildName), 1)
                     end
                 else
                     text[2] = string.gsub(text[2], guildName, string.format("|cFF40FB40<%s>|r", guildName), 1)
                 end
             else
+                for i = numLines, 2, -1 do
+                    text[i + 1] = text[i]
+                end
+                text[2] = string.format("|cFF40FB40<%s>|r", L["No Guild"])
+                numLines = numLines + 1
+            end
+        else
+            if (guildName and guildRankName) then
                 text[2] = string.gsub(text[2], guildName, "", 1)
             end
         end
+
+        if (TacoTipConfig.show_class_icon) then
+            local iconTexture = TacoTip_GetClassIconTexture(class)
+            if (iconTexture ~= nil and iconTexture ~= "") then
+                text[1] = iconTexture.." "..text[1]
+            end
+        end
+
         if (TacoTipConfig.show_team) then
             text[1] = text[1].." "..(UnitFactionGroup(unit) == "Horde" and HORDE_ICON or ALLIANCE_ICON)
         end
@@ -193,62 +241,81 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                     y1, y2, y3 = CI:GetTalentPoints(guid, 2)
                 end
 
-                local active = CI:GetActiveTalentGroup(guid)
+                local classColor = localClassColorsHex[class]
 
+                local active = CI:GetActiveTalentGroup(guid)
                 if (active == 2) then
                     if (spec2) then
                         if (wide_style) then
-                            tinsert(linesToAdd, {L["Talents"]..":", string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec2, true), y1, y2, y3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
+                            tinsert(linesToAdd, {L["Talents"]..":", string.format("%s [%2d/%2d/%2d] ", TT_GetTalentNameColor(class, spec2, classColor, true), y1, y2, y3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
                         else
-                            tinsert(linesToAdd, {string.format("%s:|cFFFFFFFF %s [%d/%d/%d]|r", L["Talents"], CI:GetSpecializationName(class, spec2, true), y1, y2, y3)})
+                            tinsert(linesToAdd, {string.format("%s: |cFFFFFFFF%s [%d/%d/%d]|r", L["Talents"], TT_GetTalentNameColor(class, spec2, classColor, true), y1, y2, y3)})
                         end
                     end
                     if (spec1) then
                         if (wide_style) then
-                            tinsert(linesToAdd, {(spec2 and " " or L["Talents"]..":"), string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec1, true), x1, x2, x3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b})
+                            tinsert(linesToAdd, {(spec2 and " " or L["Talents"]..":"), string.format("%s [%2d/%2d/%2d] ", TT_GetTalentNameColor(class, spec1, classColor, true), x1, x2, x3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b})
                         elseif (not spec2) then
-                            tinsert(linesToAdd, {string.format("%s:|cFF808080 %s [%d/%d/%d]|r", L["Talents"], CI:GetSpecializationName(class, spec1, true), x1, x2, x3)})
+                            tinsert(linesToAdd, {string.format("%s: |cFF808080%s [%d/%d/%d]|r", L["Talents"], CI:GetSpecializationName(class, spec1, true), x1, x2, x3)})
                         end
                     end
                 elseif (active == 1) then
                     if (spec1) then
                         if (wide_style) then
-                            tinsert(linesToAdd, {L["Talents"]..":", string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec1, true), x1, x2, x3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
+                            tinsert(linesToAdd, {L["Talents"]..":", string.format("%s [%2d/%2d/%2d] ", TT_GetTalentNameColor(class, spec1, classColor, true), x1, x2, x3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
                         else
-                            tinsert(linesToAdd, {string.format("%s:|cFFFFFFFF %s [%d/%d/%d]|r", L["Talents"], CI:GetSpecializationName(class, spec1, true), x1, x2, x3)})
+                            tinsert(linesToAdd, {string.format("%s: |cFFFFFFFF%s [%d/%d/%d]|r", L["Talents"], TT_GetTalentNameColor(class, spec1, classColor, true), x1, x2, x3)})
                         end
                     end
                     if (spec2) then
                         if (wide_style) then
-                            tinsert(linesToAdd, {(spec1 and " " or L["Talents"]..":"), string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec2, true), y1, y2, y3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b})
+                            tinsert(linesToAdd, {(spec1 and " " or L["Talents"]..":"), string.format("%s [%2d/%2d/%2d] ", TT_GetTalentNameColor(class, spec2, classColor, true), y1, y2, y3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b})
                         elseif (not spec1) then
-                            tinsert(linesToAdd, {string.format("%s:|cFF808080 %s [%d/%d/%d]|r", L["Talents"], CI:GetSpecializationName(class, spec2, true), y1, y2, y3)})
+                            tinsert(linesToAdd, {string.format("%s: |cFF808080%s [%d/%d/%d]|r", L["Talents"], CI:GetSpecializationName(class, spec2, true), y1, y2, y3)})
                         end
                     end
                 end
             end
             local miniText = ""
-            if (TacoTipConfig.show_gs_player) then
+            if (TacoTipConfig.show_gs_player) and (TacoTipConfig.show_gs_character or TacoTipConfig.show_avg_ilvl) then
                 local gearscore, avg_ilvl = GearScore:GetScore(guid, true)
                 if (gearscore > 0) then
                     local r, g, b = GearScore:GetQuality(gearscore)
                     if (wide_style) then
                         if (r == b and r == g) then
-                            tinsert(linesToAdd, {"|cFFFFFFFFGearScore:|r "..gearscore, "|cFFFFFFFF(iLvl:|r "..avg_ilvl.."|cFFFFFFFF)|r", r, g, b, r, g, b})
+                            if (TacoTipConfig.show_avg_ilvl) then
+                                tinsert(linesToAdd, {"|cFFFFFFFFGearScore:|r "..gearscore, "|cFFFFFFFF(iLvl:|r "..avg_ilvl.."|cFFFFFFFF)|r ", r, g, b, r, g, b})
+                            else
+                                tinsert(linesToAdd, {"|cFFFFFFFFGearScore:|r "..gearscore, r, g, b, r, g, b})
+                            end
                         else
-                            tinsert(linesToAdd, {"GearScore: "..gearscore, "(iLvl: "..avg_ilvl..")", r, g, b, r, g, b})
+                            if (TacoTipConfig.show_avg_ilvl) then
+                                tinsert(linesToAdd, {"|cFF"..NormalFontColorHex.."GearScore:|r "..gearscore, "|cFF"..NormalFontColorHex.."(iLvl:|r "..avg_ilvl.."|cFF"..NormalFontColorHex..")|r ", r, g, b, r, g, b})
+                            else
+                                tinsert(linesToAdd, {"|cFF"..NormalFontColorHex.."GearScore:|r "..gearscore, r, g, b, r, g, b})
+                            end
                         end
                     elseif (mini_style) then
                         if (r == b and r == g) then
-                            miniText = string.format("GS: |cFF%02x%02x%02x%s|r  L: |cFF%02x%02x%02x%s|r  ", r*255, g*255, b*255, gearscore, r*255, g*255, b*255, avg_ilvl)
+                            miniText = string.format("GS: |cFF%02x%02x%02x%s|r  Lvl: |cFF%02x%02x%02x%s|r  ", r * 255, g * 255, b * 255, gearscore, r * 255, g * 255, b * 255, avg_ilvl)
                         else
-                            miniText = string.format("|cFF%02x%02x%02xGS: %s  L: %s|r  ", r*255, g*255, b*255, gearscore, avg_ilvl)
+                            miniText = string.format("|cFF%02x%02x%02xGS: %s  Lvl: %s|r  ", r * 255, g * 255, b * 255, gearscore, avg_ilvl)
                         end
                     else
                         if (r == b and r == g) then
-                            tinsert(linesToAdd, {"|cFFFFFFFFGearScore:|r "..gearscore, r, g, b})
+                            if (TacoTipConfig.show_avg_ilvl) then
+                                tinsert(linesToAdd, {"|cFFFFFFFFiLevel:|r "..avg_ilvl, r, g, b})
+                            end
+                            if (TacoTipConfig.show_gs_character) then
+                                tinsert(linesToAdd, {"|cFFFFFFFFGearScore:|r "..gearscore, r, g, b})
+                            end
                         else
-                            tinsert(linesToAdd, {"GearScore: "..gearscore, r, g, b})
+                            if (TacoTipConfig.show_avg_ilvl) then
+                                tinsert(linesToAdd, {"|cFF"..NormalFontColorHex.."iLevel:|r "..avg_ilvl, r, g, b})
+                            end
+                            if (TacoTipConfig.show_gs_character) then
+                                tinsert(linesToAdd, {"|cFF"..NormalFontColorHex.."GearScore:|r "..gearscore, r, g, b})
+                            end
                         end
                     end
                 end
@@ -257,9 +324,9 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                 local pawnScore, specName, specColor = TT_PAWN:GetScore(guid, not TacoTipConfig.show_gs_player)
                 if (pawnScore > 0) then
                     if (wide_style) then
-                        tinsert(linesToAdd, {string.format("Pawn: %s%.2f|r", specColor, pawnScore), string.format("%s(%s)|r", specColor, specName), 1, 1, 1, 1, 1, 1})
+                        tinsert(linesToAdd, {string.format("Pawn: %s%.2f|r", specColor, pawnScore), string.format("%s(%s)|r ", specColor, specName), 1, 1, 1, 1, 1, 1})
                     elseif (mini_style) then
-                        miniText = miniText .. string.format("P: %s%.1f|r", specColor, pawnScore)
+                        miniText = miniText .. string.format("P: %s%.1f|r  ", specColor, pawnScore)
                     else
                         tinsert(linesToAdd, {string.format("Pawn: %s%.2f (%s)|r", specColor, pawnScore, specName), 1, 1, 1})
                     end
@@ -279,21 +346,37 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                 end
             end
         end
+    elseif (TacoTip_UnitIsPet(unit)) then
+        if (UnitIsFriend("player", unit)) then
+            text[1] = string.gsub(text[1], name, string.format("|cFF27D0F8%s|r", name))
+        else
+            --Maybe is a enemy's pet
+        end
     end
 
     if (TacoTipConfig.show_pvp_icon and UnitIsPVP(unit)) then
         text[1] = text[1].." "..PVP_FLAG_ICON
-        for i=2,numLines do
+        for i = 2, numLines do
             if (text[i]) then
                 text[i] = string.gsub(text[i], "PvP", "", 1)
             end
         end
     end
 
+    local unitLevel = UnitLevel(unit)
+    if (unitLevel and unitLevel > 0) then
+        for i = 2, 3 do
+            if (text[i]) then
+                -- NormalFontColor: "F8E017"
+                text[i] = string.gsub(text[i], ""..unitLevel.."", string.format("|cFF%s%d|r", NormalFontColorHex, unitLevel))
+            end
+        end
+    end
+
     local n = 0
-    for i=1,numLines do
+    for i = 1, numLines do
         if (text[i] and text[i] ~= "") then
-            n = n+1
+            n = n + 1
             _G["GameTooltipTextLeft"..n]:SetText(text[i])
         end
     end
@@ -306,16 +389,16 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
             _G["GameTooltipTextLeft"..n]:Hide()
             _G["GameTooltipTextRight"..n]:Hide()
         end
-        for _,v in ipairs(linesToAdd) do
+        for _, v in ipairs(linesToAdd) do
             self:AddDoubleLine(unpack(v))
         end
-        if (_G["GameTooltipTextLeft"..(n+1)]) then
-            _G["GameTooltipTextLeft"..(n+1)]:SetPoint("TOP", _G[anchor], "BOTTOM", 0, -2)
+        if (_G["GameTooltipTextLeft"..(n + 1)]) then
+            _G["GameTooltipTextLeft"..(n + 1)]:SetPoint("TOP", _G[anchor], "BOTTOM", 0, -2)
         end
     else
-        for _,v in ipairs(linesToAdd) do
+        for _, v in ipairs(linesToAdd) do
             if (n < numLines) then
-                n = n+1
+                n = n + 1
                 local txt, r, g, b = unpack(v)
                 _G["GameTooltipTextLeft"..n]:SetTextColor(r or NORMAL_FONT_COLOR.r, g or NORMAL_FONT_COLOR.g, b or NORMAL_FONT_COLOR.b)
                 _G["GameTooltipTextLeft"..n]:SetText(txt)
@@ -402,7 +485,7 @@ local function itemToolTipHook(self)
             local gs, _, r, g, b = GearScore:GetItemScore(itemLink)
             if (gs and gs > 1) then
                 self:AddLine("GearScore: "..gs, r, g, b)
-                if (TacoTipConfig.show_gs_items_hs or IsModifierKeyDown() or playerClass == "HUNTER" or 
+                if (TacoTipConfig.show_gs_items_hs or IsModifierKeyDown() or playerClass == "HUNTER" or
                     (InspectFrame and InspectFrame:IsShown() and InspectFrame.unit and select(2, UnitClass(InspectFrame.unit)) == "HUNTER")) then
                     local hs, _, r, g, b = GearScore:GetItemHunterScore(itemLink)
                     if (gs ~= hs) then
@@ -530,7 +613,7 @@ function TT:InitCharacterFrame()
 
     CharacterModelFrame:CreateFontString("PersonalAvgItemLvlText")
     PersonalAvgItemLvlText:SetFont(L["CHARACTER_FRAME_ILVL_TITLE_FONT"], L["CHARACTER_FRAME_ILVL_TITLE_FONT_SIZE"])
-    PersonalAvgItemLvlText:SetText("iLvl")
+    PersonalAvgItemLvlText:SetText("iLevel")
     PersonalAvgItemLvlText.RefreshPosition = function()
         PersonalAvgItemLvlText:SetPoint("BOTTOMLEFT",PaperDollFrame,"BOTTOMLEFT",L["CHARACTER_FRAME_ILVL_TITLE_XPOS"] + (TacoTipConfig.character_ilvl_offset_x or 0),L["CHARACTER_FRAME_ILVL_TITLE_YPOS"] + (TacoTipConfig.character_ilvl_offset_y or 0))
     end
@@ -564,7 +647,7 @@ function TT:RefreshCharacterFrame()
                 end)
             end
             PersonalGearScoreText.mover:Show()
-        elseif (PersonalGearScoreText.mover) then 
+        elseif (PersonalGearScoreText.mover) then
             PersonalGearScoreText.mover:Hide()
         end
     else
@@ -629,7 +712,7 @@ function TT:InitInspectFrame()
 
     InspectModelFrame:CreateFontString("InspectAvgItemLvlText")
     InspectAvgItemLvlText:SetFont(L["INSPECT_FRAME_ILVL_TITLE_FONT"], L["INSPECT_FRAME_ILVL_TITLE_FONT_SIZE"])
-    InspectAvgItemLvlText:SetText("iLvl")
+    InspectAvgItemLvlText:SetText("iLevel")
     InspectAvgItemLvlText.RefreshPosition = function()
         InspectAvgItemLvlText:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"BOTTOMLEFT",L["INSPECT_FRAME_ILVL_TITLE_XPOS"] + (TacoTipConfig.inspect_ilvl_offset_x or 0),L["INSPECT_FRAME_ILVL_TITLE_YPOS"] + (TacoTipConfig.inspect_ilvl_offset_y or 0))
     end
@@ -639,7 +722,7 @@ function TT:InitInspectFrame()
     InspectFrame:HookScript("OnHide", function()
         InspectGearScore:Hide()
         InspectAvgItemLvl:Hide()
-    end)    
+    end)
 end
 
 function TT:RefreshInspectFrame()
@@ -732,7 +815,14 @@ local function onEvent(self, event, ...)
         local addon = ...
         if (addon == addOnName) then
             self:UnregisterEvent("ADDON_LOADED")
-            if (TacoTipConfig.custom_pos) then
+            --
+            -- Add by shines77(gz_shines@msn.com)
+            -- Init class color and class icon textures
+            --
+            TacoTip_InitClassColorHex()
+            TacoTip_InitClassIconTextures(16, 16, 18, 18)
+
+            if (TacoTipConfig.enable_custom_pos and TacoTipConfig.custom_pos) then
                 TacoTip_CustomPosEnable(false)
             end
             if (TacoTipConfig.instant_fade) then
@@ -744,14 +834,16 @@ local function onEvent(self, event, ...)
             if (CharacterModelFrame and PaperDollFrame) then
                 TT:RefreshCharacterFrame()
             end
-            local first_login = (TacoTipConfig.conf_version ~= addOnVersion)
+            local addOnConfigVersion = TT:GetConfigVersion()
+            --TT_DebugPrint("addOnConfigVersion = "..addOnConfigVersion)
+            local first_login = (TacoTipConfig.conf_version ~= addOnConfigVersion)
             if (first_login) then
-                for k,v in pairs(TT:GetDefaults()) do
+                for k, v in pairs(TT:GetDefaults()) do
                     if (TacoTipConfig[k] == nil) then
                         TacoTipConfig[k] = v
                     end
                 end
-                TacoTipConfig.conf_version = addOnVersion
+                TacoTipConfig.conf_version = addOnConfigVersion
             end
             CAfter(3, function()
                 print("|cff59f0dcTacoTip v"..addOnVersion.." "..L["TEXT_HELP_WELCOME"])
@@ -800,7 +892,6 @@ do
     TT.frame = f
 end
 
-
 function TacoTip_CustomPosEnable(show)
     if (not TacoTipDragButton) then
         TacoTipDragButton = CreateFrame("Button", nil, UIParent)
@@ -838,7 +929,7 @@ function TacoTip_CustomPosEnable(show)
                 TacoTipDragButton:ShowExample()
             elseif (button == "RightButton") then
                 StaticPopupDialogs["_TacoTipDragButtonConfirm_"] = {["whileDead"]=1,["hideOnEscape"]=1,["timeout"]=0,["exclusive"]=1,["enterClicksFirstButton"]=1,["text"]=L["TEXT_DLG_CUSTOM_POS_CONFIRM"],
-                ["button1"]=SAVE,["button2"]=CANCEL,["button3"]=RESET,["OnAccept"]=function() TacoTipDragButton:_Save() end,["OnAlt"]=function() TacoTipDragButton:_Disable() end}
+                ["button1"]=SAVE,["button2"]=CANCEL,["button3"]=RESET,["OnAccept"]=function() TacoTipDragButton:_Save() end,["OnAlt"]=function() TacoTipDragButton:_Disable() TacoTipDragButton:_ResetPos() end}
                 StaticPopup_Show("_TacoTipDragButtonConfirm_")
             end
         end)
@@ -881,9 +972,7 @@ function TacoTip_CustomPosEnable(show)
             GameTooltip:Show()
         end
         function TacoTipDragButton:_Enable()
-            if (not TacoTipConfig.custom_pos) then
-                local from, _, to, x, y = TacoTipDragButton:GetPoint()
-                TacoTipConfig.custom_pos = {from, to, x, y}
+            if (not TacoTipConfig.enable_custom_pos) then
                 print("|cff59f0dcTacoTip:|r "..L["Custom tooltip position enabled."])
             end
             if (TacoTipOptCheckBoxCustomPosition) then
@@ -899,9 +988,12 @@ function TacoTip_CustomPosEnable(show)
             if (TacoTipOptCheckBoxAnchorMouseWorld) then
                 TacoTipOptCheckBoxAnchorMouseWorld:SetDisabled(true)
             end
+            TacoTipConfig.enable_custom_pos = true
             TacoTipConfig.anchor_mouse = false
         end
         function TacoTipDragButton:_Save()
+            local from, _, to, x, y = TacoTipDragButton:GetPoint()
+            TacoTipConfig.custom_pos = {from, to, x, y}
             TacoTipDragButton:Hide()
             print("|cff59f0dcTacoTip:|r "..L["TEXT_HELP_MOVER_SAVED"])
         end
@@ -909,7 +1001,7 @@ function TacoTip_CustomPosEnable(show)
             TacoTipDragButton:Hide()
             GameTooltip:Hide()
             GameTooltip:ClearAllPoints()
-            if (TacoTipConfig.custom_pos) then
+            if (TacoTipConfig.enable_custom_pos) then
                 print("|cff59f0dcTacoTip:|r "..L["Custom tooltip position disabled."])
             end
             if (TacoTipOptCheckBoxCustomPosition) then
@@ -921,13 +1013,24 @@ function TacoTip_CustomPosEnable(show)
             if (TacoTipOptCheckBoxAnchorMouse) then
                 TacoTipOptCheckBoxAnchorMouse:SetDisabled(false)
             end
+            TacoTipConfig.enable_custom_pos = false
+            --TacoTipConfig.custom_pos = nil
+            --TacoTipConfig.custom_anchor = nil
+        end
+        function TacoTipDragButton:_ResetPos()
+            if (TacoTipConfig.enable_custom_pos and TacoTipConfig.custom_pos) then
+                print("|cff59f0dcTacoTip:|r "..L["Tooltip position reset to default."])
+            end
+            TacoTipConfig.enable_custom_pos = false
             TacoTipConfig.custom_pos = nil
             TacoTipConfig.custom_anchor = nil
         end
         TacoTipDragButton:Hide()
     end
-    TacoTipDragButton:_Enable()
-    if (show) then
+    if (TacoTipConfig.enable_custom_pos) then
+        TacoTipDragButton:_Enable()
+    end
+    if (TacoTipConfig.enable_custom_pos and show) then
         TacoTipDragButton:Show()
     else
         TacoTipDragButton:Hide()
