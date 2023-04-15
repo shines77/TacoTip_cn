@@ -22,6 +22,8 @@
 
 原作者：[kebabstorm](https://www.curseforge.com/members/kebabstorm)
 
+GitHub: [https://github.com/anzz1/TacoTip](https://github.com/anzz1/TacoTip)
+
 ## 中文汉化版
 
 汉化版：
