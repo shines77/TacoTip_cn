@@ -1,4 +1,4 @@
-# TacoTip 汉化版
+# TacoTip 中文修改版
 
 ## 简介
 
