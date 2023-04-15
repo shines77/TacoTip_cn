@@ -18,18 +18,17 @@
 
 英文原版：
 
-[https://www.curseforge.com/wow/addons/tacotip-gearscore-talents](https://www.curseforge.com/wow/addons/tacotip-gearscore-talents)
-
-原作者：[kebabstorm](https://www.curseforge.com/members/kebabstorm)
+CurseForge: [https://www.curseforge.com/wow/addons/tacotip-gearscore-talents](https://www.curseforge.com/wow/addons/tacotip-gearscore-talents)
 
 GitHub: [https://github.com/anzz1/TacoTip](https://github.com/anzz1/TacoTip)
 
-## 中文汉化版
+作者：[kebabstorm](https://www.curseforge.com/members/kebabstorm)
+
+## 中文汉化修改版
 
 汉化版：
 
-[https://gitee.com/shines77/TacoTip_cn](https://gitee.com/shines77/TacoTip_cn) --（国内）
-
-[https://github.com/shines77/TacoTip_cn](https://github.com/shines77/TacoTip_cn) --（国外）
+国内: [https://gitee.com/shines77/TacoTip_cn](https://gitee.com/shines77/TacoTip_cn)
+国外: [https://github.com/shines77/TacoTip_cn](https://github.com/shines77/TacoTip_cn)
 
 汉化作者：[shines77(郭子)](https://gitee.com/shines77)
