@@ -1,7 +1,7 @@
 
 local addOnName = ...
 local addOnVersion = GetAddOnMetadata(addOnName, "Version") or "0.0.1"
-local addOnConfigVersion = "0.3.0-shines77"
+local addOnConfigVersion = "0.4.0-shines77"
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
@@ -48,7 +48,7 @@ function TT:GetDefaults()
         show_avg_ilvl = true,
         hide_in_combat = false,
         show_item_level = true,
-        tip_style = 2,
+        tip_style = 1,
         show_target = true,
         show_pawn_player = false,
         show_team = false,
@@ -71,8 +71,8 @@ function TT:GetDefaults()
         character_ilvl_offset_x = 0,
         character_ilvl_offset_y = 0,
         unlock_info_position = false,
+        show_achievement_points = false,
         conf_version = addOnConfigVersion,
-        show_achievement_points = false
         --custom_pos = nil,
         --custom_anchor = nil,
     }
@@ -237,17 +237,17 @@ frame:SetScript("OnShow", function(frame)
         local name_r = TacoTipConfig.color_class and classc and classc.r or 0
         local name_g = TacoTipConfig.color_class and classc and classc.g or 0.6
         local name_b = TacoTipConfig.color_class and classc and classc.b or 0.1
-        local title = TacoTipConfig.show_titles and L[" 弑君者"] or ""
+        local title = TacoTipConfig.show_titles and L[" the Kingslayer"] or ""
         options.exampleTooltip:AddLine(string.format("|cFF%02x%02x%02xKebabstorm%s %s%s|r", name_r*255, name_g*255, name_b*255, title, (TacoTipConfig.show_team and (HORDE_ICON.." ") or ""), (TacoTipConfig.show_pvp_icon and PVP_FLAG_ICON or "")))
         if (TacoTipConfig.show_guild_name) then
             if (TacoTipConfig.show_guild_rank) then
                 if (TacoTipConfig.guild_rank_alt_style) then
-                    options.exampleTooltip:AddLine("|cFF40FB40<最强一波> (见习)|r")
+                    options.exampleTooltip:AddLine("|cFF40FB40<天空之城> (官员)|r")
                 else
-                    options.exampleTooltip:AddLine(string.format("|cFF40FB40"..L["FORMAT_GUILD_RANK_1"].."|r", "见习", "最强一波"))
+                    options.exampleTooltip:AddLine(string.format("|cFF40FB40"..L["FORMAT_GUILD_RANK_1"].."|r", "官员", "天空之城"))
                 end
             else
-                options.exampleTooltip:AddLine("|cFF40FB40<最强一波>|r")
+                options.exampleTooltip:AddLine("|cFF40FB40<天空之城>|r")
             end
         end
         if (TacoTipConfig.color_class) then
