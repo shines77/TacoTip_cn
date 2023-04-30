@@ -36,7 +36,7 @@ elseif (CI:IsClassic()) then
     BRACKET_SIZE = 200
 end
 
-local MAX_SCORE = BRACKET_SIZE*6-1
+local MAX_SCORE = BRACKET_SIZE * 6 - 1
 
 local GS_ItemTypes = {
     ["INVTYPE_RELIC"] = { ["SlotMOD"] = 0.3164, ["ItemSlot"] = 18, ["Enchantable"] = false},
@@ -91,31 +91,31 @@ local GS_Formula = {
 }
 
 local GS_Quality = {
-    [BRACKET_SIZE*6] = {
+    [BRACKET_SIZE * 6] = {
         ["Red"] = { ["A"] = 0.94, ["B"] = BRACKET_SIZE*5, ["C"] = 0.00006, ["D"] = 1 },
         ["Blue"] = { ["A"] = 0.47, ["B"] = BRACKET_SIZE*5, ["C"] = 0.00047, ["D"] = -1 },
         ["Green"] = { ["A"] = 0, ["B"] = 0, ["C"] = 0, ["D"] = 0 },
         ["Description"] = "Legendary"
     },
-    [BRACKET_SIZE*5] = {
-        ["Red"] = { ["A"] = 0.69, ["B"] = BRACKET_SIZE*4, ["C"] = 0.00025, ["D"] = 1 },
-        ["Blue"] = { ["A"] = 0.28, ["B"] = BRACKET_SIZE*4, ["C"] = 0.00019, ["D"] = 1 },
-        ["Green"] = { ["A"] = 0.97, ["B"] = BRACKET_SIZE*4, ["C"] = 0.00096, ["D"] = -1 },
+    [BRACKET_SIZE * 5] = {
+        ["Red"] = { ["A"] = 0.69, ["B"] = BRACKET_SIZE * 4, ["C"] = 0.00025, ["D"] = 1 },
+        ["Blue"] = { ["A"] = 0.28, ["B"] = BRACKET_SIZE * 4, ["C"] = 0.00019, ["D"] = 1 },
+        ["Green"] = { ["A"] = 0.97, ["B"] = BRACKET_SIZE * 4, ["C"] = 0.00096, ["D"] = -1 },
         ["Description"] = "Epic"
     },
-    [BRACKET_SIZE*4] = {
-        ["Red"] = { ["A"] = 0.0, ["B"] = BRACKET_SIZE*3, ["C"] = 0.00069, ["D"] = 1 },
-        ["Blue"] = { ["A"] = 0.5, ["B"] = BRACKET_SIZE*3, ["C"] = 0.00022, ["D"] = -1 },
-        ["Green"] = { ["A"] = 1, ["B"] = BRACKET_SIZE*3, ["C"] = 0.00003, ["D"] = -1 },
+    [BRACKET_SIZE * 4] = {
+        ["Red"] = { ["A"] = 0.0, ["B"] = BRACKET_SIZE * 3, ["C"] = 0.00069, ["D"] = 1 },
+        ["Blue"] = { ["A"] = 0.5, ["B"] = BRACKET_SIZE * 3, ["C"] = 0.00022, ["D"] = -1 },
+        ["Green"] = { ["A"] = 1, ["B"] = BRACKET_SIZE * 3, ["C"] = 0.00003, ["D"] = -1 },
         ["Description"] = "Superior"
     },
-    [BRACKET_SIZE*3] = {
-        ["Red"] = { ["A"] = 0.12, ["B"] = BRACKET_SIZE*2, ["C"] = 0.00012, ["D"] = -1 },
-        ["Blue"] = { ["A"] = 1, ["B"] = BRACKET_SIZE*2, ["C"] = 0.00050, ["D"] = -1 },
-        ["Green"] = { ["A"] = 0, ["B"] = BRACKET_SIZE*2, ["C"] = 0.001, ["D"] = 1 },
+    [BRACKET_SIZE * 3] = {
+        ["Red"] = { ["A"] = 0.12, ["B"] = BRACKET_SIZE * 2, ["C"] = 0.00012, ["D"] = -1 },
+        ["Blue"] = { ["A"] = 1, ["B"] = BRACKET_SIZE * 2, ["C"] = 0.00050, ["D"] = -1 },
+        ["Green"] = { ["A"] = 0, ["B"] = BRACKET_SIZE * 2, ["C"] = 0.001, ["D"] = 1 },
         ["Description"] = "Uncommon"
     },
-    [BRACKET_SIZE*2] = {
+    [BRACKET_SIZE * 2] = {
         ["Red"] = { ["A"] = 1, ["B"] = BRACKET_SIZE, ["C"] = 0.00088, ["D"] = -1 },
         ["Blue"] = { ["A"] = 1, ["B"] = 000, ["C"] = 0.00000, ["D"] = 0 },
         ["Green"] = { ["A"] = 1, ["B"] = BRACKET_SIZE, ["C"] = 0.001, ["D"] = -1 },
@@ -140,89 +140,91 @@ local function getPlayerGUID(arg)
     return nil
 end
 
-function TT_GS:GetQuality(ItemScore)
-    ItemScore = tonumber(ItemScore)
-    if (not ItemScore) then
+function TT_GS:GetQuality(itemScore)
+    itemScore = tonumber(itemScore)
+    if (not itemScore) then
         return 0, 0, 0, "Trash"
     end
     --if (not CI:IsWotlk()) then
         --return 1, 1, 1, "Common"
     --end
-    if (ItemScore > MAX_SCORE) then
-        ItemScore = MAX_SCORE
+    if (itemScore > MAX_SCORE) then
+        itemScore = MAX_SCORE
     end
     local Red = 0.1
     local Blue = 0.1
     local Green = 0.1
     local GS_QualityDescription = "Legendary"
-    for i = 0,6 do
-        if ((ItemScore > i * BRACKET_SIZE) and (ItemScore <= ((i + 1) * BRACKET_SIZE))) then
-            local Red = GS_Quality[( i + 1 ) * BRACKET_SIZE].Red["A"] + (((ItemScore - GS_Quality[( i + 1 ) * BRACKET_SIZE].Red["B"])*GS_Quality[( i + 1 ) * BRACKET_SIZE].Red["C"])*GS_Quality[( i + 1 ) * BRACKET_SIZE].Red["D"])
-            local Blue = GS_Quality[( i + 1 ) * BRACKET_SIZE].Green["A"] + (((ItemScore - GS_Quality[( i + 1 ) * BRACKET_SIZE].Green["B"])*GS_Quality[( i + 1 ) * BRACKET_SIZE].Green["C"])*GS_Quality[( i + 1 ) * BRACKET_SIZE].Green["D"])
-            local Green = GS_Quality[( i + 1 ) * BRACKET_SIZE].Blue["A"] + (((ItemScore - GS_Quality[( i + 1 ) * BRACKET_SIZE].Blue["B"])*GS_Quality[( i + 1 ) * BRACKET_SIZE].Blue["C"])*GS_Quality[( i + 1 ) * BRACKET_SIZE].Blue["D"])
-            return Red, Green, Blue, GS_Quality[( i + 1 ) * BRACKET_SIZE].Description
+    for i = 0, 6 do
+        if ((itemScore > i * BRACKET_SIZE) and (itemScore <= ((i + 1) * BRACKET_SIZE))) then
+            local Red   = GS_Quality[(i + 1) * BRACKET_SIZE].Red["A"] + (((itemScore - GS_Quality[(i + 1) * BRACKET_SIZE].Red["B"]) * GS_Quality[(i + 1) * BRACKET_SIZE].Red["C"]) * GS_Quality[(i + 1) * BRACKET_SIZE].Red["D"])
+            local Blue  = GS_Quality[(i + 1) * BRACKET_SIZE].Green["A"] + (((itemScore - GS_Quality[(i + 1) * BRACKET_SIZE].Green["B"]) * GS_Quality[(i + 1) * BRACKET_SIZE].Green["C"]) * GS_Quality[(i + 1) * BRACKET_SIZE].Green["D"])
+            local Green = GS_Quality[(i + 1) * BRACKET_SIZE].Blue["A"] + (((itemScore - GS_Quality[(i + 1) * BRACKET_SIZE].Blue["B"]) * GS_Quality[(i + 1) * BRACKET_SIZE].Blue["C"]) * GS_Quality[(i + 1) * BRACKET_SIZE].Blue["D"])
+            return Red, Green, Blue, GS_Quality[(i + 1) * BRACKET_SIZE].Description
         end
     end
     return 0.1, 0.1, 0.1, "Trash"
 end
 
 
-function TT_GS:GetItemScore(ItemLink)
-    if not (ItemLink) then
+function TT_GS:GetItemScore(inItemLink)
+    if not (inItemLink) then
         return 0, 0, 0.1, 0.1, 0.1
     end
-    local ItemName, ItemLink, ItemRarity, ItemLevel, ItemMinLevel, ItemType, ItemSubType, ItemStackCount, ItemEquipLoc, ItemTexture = GetItemInfo(ItemLink)
-    if (ItemLink and ItemRarity and ItemLevel and ItemEquipLoc and GS_ItemTypes[ItemEquipLoc]) then
-        local Table
-        local QualityScale = 1
-        local GearScore = 0
-        local Scale = 1.8618
-        if (ItemRarity == 5) then 
-            QualityScale = 1.3
-            ItemRarity = 4
-        elseif (ItemRarity == 1) then
-            QualityScale = 0.005
-            ItemRarity = 2
-        elseif (ItemRarity == 0) then
-            QualityScale = 0.005
-            ItemRarity = 2
-        elseif (ItemRarity == 7) then
-            ItemRarity = 3
-            ItemLevel = 187.05
+    local itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, sellPrice, classID, subclassID, bindType,
+expacID, setID, isCraftingReagent = GetItemInfo(inItemLink)
+    if (itemLink and itemQuality and itemLevel and itemEquipLoc and GS_ItemTypes[itemEquipLoc]) then
+        local formulaTable
+        local qualityScale = 1
+        local gearScore = 0
+        local scale = 1.8618
+        -- itemQuality: 0: Poor, 1: Common, 2: Uncommon, 3: Rare, 4: Epic, 5: Legendary, 6: Artifact, 7: Heirloom, 8: WoW Token
+        if (itemQuality == 0) then
+            qualityScale = 0.005
+            itemQuality = 2
+        elseif (itemQuality == 1) then
+            qualityScale = 0.01
+            itemQuality = 2
+        elseif (itemQuality == 5) then
+            qualityScale = 1.3
+            itemQuality = 4
+        elseif (itemQuality == 7) then
+            itemLevel = 187.05
+            itemQuality = 3
         end
-        if (ItemLevel > 120) then
-            Table = GS_Formula["A"]
+        if (itemLevel > 120) then
+            formulaTable = GS_Formula["A"]
         else
-            Table = GS_Formula["B"]
+            formulaTable = GS_Formula["B"]
         end
-        if ((ItemRarity >= 2) and (ItemRarity <= 4)) then
-            local Red, Green, Blue = TT_GS:GetQuality((floor(((ItemLevel - Table[ItemRarity].A) / Table[ItemRarity].B) * 1 * Scale)) * 11.25)
-            GearScore = floor(((ItemLevel - Table[ItemRarity].A) / Table[ItemRarity].B) * GS_ItemTypes[ItemEquipLoc].SlotMOD * Scale * QualityScale)
-            if (ItemLevel == 187.05) then
-                ItemLevel = 0
+        if ((itemQuality >= 2) and (itemQuality <= 4)) then
+            local Red, Green, Blue = TT_GS:GetQuality((floor(((itemLevel - formulaTable[itemQuality].A) / formulaTable[itemQuality].B) * 1 * scale)) * 11.25)
+            gearScore = floor(((itemLevel - formulaTable[itemQuality].A) / formulaTable[itemQuality].B) * GS_ItemTypes[itemEquipLoc].SlotMOD * scale * qualityScale)
+            if (itemLevel == 187.05) then
+                itemLevel = 0
             end
-            if (GearScore < 0) then
-                GearScore = 0
+            if (gearScore < 0) then
+                gearScore = 0
                 Red, Green, Blue = TT_GS:GetQuality(1)
             end
-            return GearScore, ItemLevel, Red, Green, Blue, ItemEquipLoc
+            return gearScore, itemLevel, Red, Green, Blue, itemEquipLoc
         end
     end
     return 0, 0, 0.1, 0.1, 0.1, 0
 end
 
-function TT_GS:GetItemHunterScore(ItemLink)
-    local GearScore, ItemLevel, Red, Green, Blue, ItemEquipLoc = TT_GS:GetItemScore(ItemLink)
-    if ((ItemEquipLoc == "INVTYPE_2HWEAPON") or (ItemEquipLoc == "INVTYPE_WEAPONMAINHAND") or (ItemEquipLoc == "INVTYPE_WEAPONOFFHAND") or (ItemEquipLoc == "INVTYPE_WEAPON") or (ItemEquipLoc == "INVTYPE_HOLDABLE")) then
-        GearScore = floor(GearScore * 0.3164)
-    elseif ((ItemEquipLoc == "INVTYPE_RANGEDRIGHT") or (ItemEquipLoc == "INVTYPE_RANGED")) then
-        GearScore = floor(GearScore * 5.3224)
+function TT_GS:GetItemHunterScore(inItemLink)
+    local gearScore, itemLevel, Red, Green, Blue, itemEquipLoc = TT_GS:GetItemScore(inItemLink)
+    if ((itemEquipLoc == "INVTYPE_2HWEAPON") or (itemEquipLoc == "INVTYPE_WEAPONMAINHAND") or (itemEquipLoc == "INVTYPE_WEAPONOFFHAND") or (itemEquipLoc == "INVTYPE_WEAPON") or (itemEquipLoc == "INVTYPE_HOLDABLE")) then
+        gearScore = floor(gearScore * 0.3164)
+    elseif ((itemEquipLoc == "INVTYPE_RANGEDRIGHT") or (itemEquipLoc == "INVTYPE_RANGED")) then
+        gearScore = floor(gearScore * 5.3224)
     end
-    return GearScore, ItemLevel, Red, Green, Blue, ItemEquipLoc
+    return gearScore, itemLevel, Red, Green, Blue, itemEquipLoc
 end
 
 local function itemcacheCB(tbl, id)
-    for i=1,#tbl.items do
+    for i = 1, #tbl.items do
         if (id == tbl.items[i]) then
             table.remove(tbl.items, i)
         end
@@ -232,9 +234,8 @@ local function itemcacheCB(tbl, id)
     end
 end
 
-
-function TT_GS:GetScore(unitorguid, useCallback)
-    local guid = getPlayerGUID(unitorguid)
+function TT_GS:GetScore(unitOrGuid, useCallback)
+    local guid = getPlayerGUID(unitOrGuid)
     if (guid) then
         if (guid ~= UnitGUID("player")) then
             local _, invTime = CI:GetLastCacheTime(guid)
@@ -243,20 +244,20 @@ function TT_GS:GetScore(unitorguid, useCallback)
             end
         end
 
-        local PlayerClass, PlayerEnglishClass = GetPlayerInfoByGUID(guid)
-        local GearScore = 0
-        local ItemCount = 0
-        local LevelTotal = 0
-        local TitanGrip = 1
-        local IsReady = true
+        local playerClass, playerEnglishClass = GetPlayerInfoByGUID(guid)
+        local gearScore = 0
+        local itemCount = 0
+        local levelTotal = 0
+        local titanGrip = 1
+        local isReady = true
 
         local mainHandItem = CI:GetInventoryItemMixin(guid, 16)
         local offHandItem = CI:GetInventoryItemMixin(guid, 17)
         local mainHandLink
         local offHandLink
-        
+
         local cb_table
-        
+
         if (useCallback) then
             cb_table = {["guid"] = guid, ["items"] = {}}
         end
@@ -265,7 +266,7 @@ function TT_GS:GetScore(unitorguid, useCallback)
             if (mainHandItem:IsItemDataCached()) then
                 mainHandLink = mainHandItem:GetItemLink()
             else
-                IsReady = false
+                isReady = false
                 local itemID = mainHandItem:GetItemID()
                 if (itemID) then
                     if (useCallback) then
@@ -283,7 +284,7 @@ function TT_GS:GetScore(unitorguid, useCallback)
             if (offHandItem:IsItemDataCached()) then
                 offHandLink = offHandItem:GetItemLink()
             else
-                IsReady = false
+                isReady = false
                 local itemID = offHandItem:GetItemID()
                 if (itemID) then
                     if (useCallback) then
@@ -299,47 +300,47 @@ function TT_GS:GetScore(unitorguid, useCallback)
         end
 
         if (mainHandLink and offHandLink) then
-            local ItemName, ItemLink, ItemRarity, ItemLevel, ItemMinLevel, ItemType, ItemSubType, ItemStackCount, ItemEquipLoc, ItemTexture = GetItemInfo(mainHandLink)
-            if (ItemEquipLoc == "INVTYPE_2HWEAPON") then
-                TitanGrip = 0.5
+            local itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture = GetItemInfo(mainHandLink)
+            if (itemEquipLoc == "INVTYPE_2HWEAPON") then
+                titanGrip = 0.5
             end
         end
 
         if (offHandLink) then
-            local ItemName, ItemLink, ItemRarity, ItemLevel, ItemMinLevel, ItemType, ItemSubType, ItemStackCount, ItemEquipLoc, ItemTexture = GetItemInfo(offHandLink)
-            if (ItemEquipLoc == "INVTYPE_2HWEAPON") then
-                TitanGrip = 0.5
+            local itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture = GetItemInfo(offHandLink)
+            if (itemEquipLoc == "INVTYPE_2HWEAPON") then
+                titanGrip = 0.5
             end
-            local TempScore, ItemLevel = TT_GS:GetItemScore(offHandLink)
-            if (PlayerEnglishClass == "HUNTER") then
-                TempScore = TempScore * 0.3164
+            local tmpScore, itemLevel = TT_GS:GetItemScore(offHandLink)
+            if (playerEnglishClass == "HUNTER") then
+                tmpScore = tmpScore * 0.3164
             end
-            GearScore = GearScore + TempScore * TitanGrip
-            ItemCount = ItemCount + 1
-            LevelTotal = LevelTotal + ItemLevel
+            gearScore = gearScore + tmpScore * titanGrip
+            itemCount = itemCount + 1
+            levelTotal = levelTotal + itemLevel
         end
 
         for i = 1, 18 do
-            if ( i ~= 4 ) and ( i ~= 17 ) then
+            if (i ~= 4) and (i ~= 17) then
                 local item = CI:GetInventoryItemMixin(guid, i)
                 if (item) then
                     if (item:IsItemDataCached()) then
-                        local TempScore, ItemLevel = TT_GS:GetItemScore(item:GetItemLink())
-                        if (PlayerEnglishClass == "HUNTER") then
+                        local tmpScore, itemLevel = TT_GS:GetItemScore(item:GetItemLink())
+                        if (playerEnglishClass == "HUNTER") then
                             if (i == 16) then
-                                TempScore = TempScore * 0.3164
+                                tmpScore = tmpScore * 0.3164
                             elseif (i == 18) then
-                                TempScore = TempScore * 5.3224
+                                tmpScore = tmpScore * 5.3224
                             end
                         end
-                        if ( i == 16 ) then
-                            TempScore = TempScore * TitanGrip
+                        if (i == 16) then
+                            tmpScore = tmpScore * titanGrip
                         end
-                        GearScore = GearScore + TempScore
-                        ItemCount = ItemCount + 1
-                        LevelTotal = LevelTotal + ItemLevel
+                        gearScore = gearScore + tmpScore
+                        itemCount = itemCount + 1
+                        levelTotal = levelTotal + itemLevel
                     else
-                        IsReady = false
+                        isReady = false
                         local itemID = item:GetItemID()
                         if (itemID) then
                             if (useCallback) then
@@ -355,10 +356,9 @@ function TT_GS:GetScore(unitorguid, useCallback)
                 end
             end
         end
-        if (IsReady and GearScore > 0 and ItemCount > 0) then
-            return floor(GearScore), floor(LevelTotal/ItemCount)
+        if (isReady and (gearScore > 0) and (itemCount > 0)) then
+            return floor(gearScore), floor(levelTotal / itemCount)
         end
     end
     return 0,0
 end
-

@@ -59,7 +59,7 @@ end
 
 function TacoTip_GSCallback(guid)
     local _, ttUnit = GameTooltip:GetUnit()
-    if (ttUnit and UnitGUID(ttUnit) == guid) then
+    if (ttUnit and (UnitGUID(ttUnit) == guid)) then
         GameTooltip:SetUnit(ttUnit)
     end
 end
@@ -103,8 +103,8 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         text[i] = _G["GameTooltipTextLeft"..i]:GetText()
     end
 
-    if (not text[1] or text[1] == "") then return end
-    if (not text[2] or text[2] == "") then return end
+    if ((not text[1]) or (text[1] == "")) then return end
+    if ((not text[2]) or (text[2] == "")) then return end
 
     if (TacoTipConfig.show_target and UnitIsConnected(unit) and not UnitIsUnit(unit, "player")) then
         local unitTarget = unit .. "target"
@@ -214,7 +214,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                 newNumLines = newNumLines + 1
             end
         else
-            if (guildName and guildRankName) then
+            if (guildName) then
                 text[2] = string.gsub(text[2], guildName, "", 1)
             end
         end
@@ -230,8 +230,8 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
             text[1] = text[1].." "..(UnitFactionGroup(unit) == "Horde" and HORDE_ICON or ALLIANCE_ICON)
         end
 
-        if (not TacoTipConfig.hide_in_combat or not InCombatLockdown()) then
-            if (TacoTipConfig.show_talents) then
+        if ((not TacoTipConfig.hide_in_combat) or (not InCombatLockdown())) then
+            if (TacoTipConfig.show_talents and guid) then
                 local x1, x2, x3 = 0,0,0
                 local y1, y2, y3 = 0,0,0
                 local spec1 = CI:GetSpecialization(guid, 1)
@@ -369,7 +369,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         for i = 2, 3 do
             if (text[i]) then
                 -- NormalFontColor: "F8E017"
-                text[i] = string.gsub(text[i], ""..unitLevel.."", string.format("|cFF%s%d|r", NormalFontColorHex, unitLevel))
+                text[i] = string.gsub(text[i], " "..unitLevel.."", string.format(" |cFF%s%d|r", NormalFontColorHex, unitLevel))
             end
         end
     end
@@ -420,7 +420,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         end
     end
 
-    if (not TacoTipConfig.show_hp_bar and GameTooltipStatusBar and GameTooltipStatusBar:IsShown()) then
+    if ((not TacoTipConfig.show_hp_bar) and GameTooltipStatusBar and GameTooltipStatusBar:IsShown()) then
         GameTooltipStatusBar:Hide()
     end
 
