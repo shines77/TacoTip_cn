@@ -75,6 +75,39 @@ function TacoTip_UnitIsPet(unit)
     return UnitPlayerControlled(unit) and not UnitIsPlayer(unit)
 end
 
+--
+-- Return value: name, typeID, difficulty, maxPlayers
+--
+function TacoTio_GetLFGDungeonInfo(dungeonID)
+    -- See: https://wowpedia.fandom.com/wiki/API_LFGGetDungeonInfoByID
+    -- Since 4.3.0, Change to GetLFGDungeonInfo(dungeonID)
+    if (dungeonID ~= nil) then
+        local dungeonInfo = LFGGetDungeonInfoByID(dungeonID)
+        if (dungeonInfo ~= nil) then
+            return dungeonInfo[LFG_RETURN_VALUES.name], dungeonInfo[LFG_RETURN_VALUES.typeID], dungeonInfo[LFG_RETURN_VALUES.difficulty], dungeonInfo[LFG_RETURN_VALUES.maxPlayers]
+        end
+    end
+end
+
+--
+-- Return value: isInRaid, maxPlayers
+--
+function TacoTio_GetRaidMaxPlayers()
+    local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceID, instanceGroupSize, lfgDungeonID = GetInstanceInfo()
+    if (instanceID == nil or instanceID == "none") then
+        return false, 1
+    elseif (instanceID == "party" or instanceID == "arena" or instanceID == "scenario") then
+        return false, maxPlayers
+    elseif (instanceID == "raid" or instanceID == "pvp") then
+        return true, maxPlayers
+    else
+        if (lfgDungeonID == nil) then
+            --local dungeonName, dungeonTypeID, dungeonDifficulty, dungeonMaxPlayers = TacoTio_GetLFGDungeonInfo(lfgDungeonID)
+        end
+        return false, maxPlayers
+    end
+end
+
 GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     local name, unit = self:GetUnit()
     if (not unit) then
@@ -180,6 +213,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         if (not TacoTipConfig.show_titles and string.find(text[1], name)) then
             text[1] = name
         end
+
         if (TacoTipConfig.color_class) then
             if (localizedClass and class) then
                 local classClr = localClassColors[class]
@@ -194,6 +228,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                 end
             end
         end
+
         local guildName, guildRankName = GetGuildInfo(unit)
         if (TacoTipConfig.show_guild_name) then
             if (guildName and guildRankName) then
@@ -230,7 +265,9 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
             text[1] = text[1].." "..(UnitFactionGroup(unit) == "Horde" and HORDE_ICON or ALLIANCE_ICON)
         end
 
-        if ((not TacoTipConfig.hide_in_combat) or (not InCombatLockdown())) then
+        -- Modified by shines77 2024/08/08: When it's in combat, if in raid and maxPlayers >= 20, this part will not be show.
+        local isInRaid, maxPlayers = TacoTio_GetRaidMaxPlayers()
+        if (((not TacoTipConfig.hide_in_combat) and ((not isInRaid) or (maxPlayers < 20))) or (not InCombatLockdown())) then
             if (TacoTipConfig.show_talents and guid) then
                 local x1, x2, x3 = 0,0,0
                 local y1, y2, y3 = 0,0,0

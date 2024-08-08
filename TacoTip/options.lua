@@ -1,7 +1,7 @@
 
 local addOnName = ...
 local addOnVersion = GetAddOnMetadata(addOnName, "Version") or "0.0.1"
-local addOnConfigVersion = "0.4.0-shines77"
+local addOnConfigVersion = "0.4.3.1-shines77"
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
