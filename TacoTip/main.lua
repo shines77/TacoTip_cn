@@ -265,7 +265,10 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
             text[1] = text[1].." "..(UnitFactionGroup(unit) == "Horde" and HORDE_ICON or ALLIANCE_ICON)
         end
 
+        --
         -- Modified by shines77 2024/08/08: When it's in combat, if in raid and maxPlayers >= 20, this part will not be show.
+        -- Even if you do not select the "disable in battle" option, GS scores and talents will not be displayed in battles in raid decks with a population of 20 or more;
+        --
         local isInRaid, maxPlayers = TacoTio_GetRaidMaxPlayers()
         if (((not TacoTipConfig.hide_in_combat) and ((not isInRaid) or (maxPlayers < 20))) or (not InCombatLockdown())) then
             if (TacoTipConfig.show_talents and guid) then
